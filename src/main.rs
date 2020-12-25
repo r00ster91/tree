@@ -1,10 +1,7 @@
-use rand::Rng;
-use std::convert::TryFrom;
-
 const DARK_LEAVES: [char; 2] = ['░', '▒'];
 const LIGHT_LEAF: char = '▓';
-const LEAF_BYTE_SIZE: usize = 3;
 const STEM: char = '█';
+const BLOCK_ELEMENT_BYTE_SIZE: usize = 3;
 
 struct Tree {
     size: usize,
@@ -14,42 +11,62 @@ struct Tree {
 impl Tree {
     fn new(size: usize) -> Tree {
         let size_half = size / 2;
+
+        //
+        // Precompute the required string capacity
+        //
         let mut capacity = 0;
+
+        // This is basically like below but with the string push_stres replaced by addition
         for index in 0..size_half {
-            let space_count = size_half - index;
-            capacity += space_count;
-            capacity += (index * 2) * LEAF_BYTE_SIZE;
+            // Spaces
+            capacity += size_half - index;
+
+            // Leaves
+            capacity += (index * 2) * BLOCK_ELEMENT_BYTE_SIZE;
+
+            // Newline
             capacity += 1;
         }
 
+        // Spaces
+        let stem_thickness = size / 6;
+        let stem_height = size / 10;
+        capacity += (size_half - stem_thickness / 2) * stem_height;
+
+        // Stem
+        capacity += stem_thickness * BLOCK_ELEMENT_BYTE_SIZE * stem_height;
+
+        // Newline
+        capacity += stem_height;
+
+        //
+        // Build the tree
+        //
         let mut string = String::with_capacity(capacity);
 
+        let mut next_leaf = 0;
         for index in 0..size_half {
-            let space_count = size_half - index;
-            for i in 0..space_count {
+            for _ in 0..size_half - index {
                 string.push(' ');
             }
             for _ in 0..index * 2 {
-                let leaf;
-                let chosen_leaf = rand::thread_rng().gen_range(0..=6);
-                if chosen_leaf == 6 {
-                    leaf = LIGHT_LEAF;
-                } else {
-                    leaf = DARK_LEAVES[chosen_leaf % DARK_LEAVES.len()];
-                }
+                let leaf = match next_leaf {
+                    0 => DARK_LEAVES[0],
+                    1 => DARK_LEAVES[1],
+                    _ => LIGHT_LEAF,
+                };
                 string.push(leaf);
+                next_leaf = (next_leaf + 1) % 3;
             }
             string.push('\n');
         }
 
-        let stem_thickness = size / 6;
-        let stem_height = size / 10;
-
         for _ in 0..stem_height {
-            for index in 0..size_half - stem_thickness / 2 {
+            for _ in 0..size_half - stem_thickness / 2 {
                 string.push(' ');
             }
-            for index in 0..stem_thickness {
+            for _ in 0..stem_thickness {
                 string.push(STEM);
             }
             string.push('\n');
