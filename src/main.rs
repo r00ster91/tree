@@ -17,7 +17,7 @@ impl Tree {
         //
         let mut capacity = 0;
 
-        // This is basically like below but with the string push_stres replaced by addition
+        // This is basically like below but with the string pushes replaced by addition
         for index in 0..size_half {
             // Spaces
             capacity += size_half - index;
