@@ -1,10 +1,11 @@
+use std::{env, process};
+
 const DARK_LEAVES: [char; 2] = ['░', '▒'];
 const LIGHT_LEAF: char = '▓';
 const STEM: char = '█';
 const BLOCK_ELEMENT_BYTE_SIZE: usize = 3;
 
 struct Tree {
-    size: usize,
     string: String,
 }
 
@@ -78,12 +79,25 @@ impl Tree {
         //     string.len(),
         //     capacity
         // );
-        Tree { size, string }
+        Tree { string }
     }
 }
 
 fn main() {
-    let tree = Tree::new(50);
+    let mut args = env::args();
+    args.next().expect("No executable path");
+
+    let tree_size = if let Some(arg) = args.next() {
+        arg.parse::<usize>().unwrap_or_else(|_| {
+            eprintln!("Argument must be a valid unsigned integer");
+            process::exit(1);
+        })
+    } else {
+        eprintln!("Using 50 as the tree size");
+        50
+    };
+
+    let tree = Tree::new(tree_size);
 
     println!("{}", tree.string);
 }
